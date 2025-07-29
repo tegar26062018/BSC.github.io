@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -126,13 +125,18 @@
                 </div>
 
                 <div class="mt-8">
-                    <button class="w-full bg-purple-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-purple-700 transition-all flex items-center justify-center gap-2">
+                    <button id="simpanBtn" class="w-full bg-purple-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-purple-700 transition-all flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                         </svg>
                         Simpan Absensi Hari Ini
                     </button>
                 </div>
+                <script>
+                    document.getElementById('simpanBtn').addEventListener('click', function() {
+                        alert('Absensi berhasil disimpan! (Fungsi ini akan bekerja sempurna setelah ditambahkan backend)');
+                    });
+                </script>
             </div>
         </div>
     </section>
@@ -144,9 +148,14 @@
             <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-semibold">50 Atlet Banten Swimming Club</h3>
-                    <button class="bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition-all">
+                    <button id="tambahAtletBtn" class="bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition-all">
                         Tambah Atlet
                     </button>
+                    <script>
+                        document.getElementById('tambahAtletBtn').addEventListener('click', function() {
+                            alert('Fitur tambah atlet akan muncul di sini setelah implementasi lengkap');
+                        });
+                    </script>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -169,8 +178,8 @@
                                 <td class="py-2 px-4 border">Laki-laki</td>
                                 <td class="py-2 px-4 border">08123456789</td>
                                 <td class="py-2 px-4 border">
-                                    <button class="text-purple-600 hover:text-purple-800 mr-2">Edit</button>
-                                    <button class="text-red-600 hover:text-red-800">Hapus</button>
+                                    <button onclick="editAtlet(this)" class="text-purple-600 hover:text-purple-800 mr-2">Edit</button>
+                                    <button onclick="hapusAtlet(this)" class="text-red-600 hover:text-red-800">Hapus</button>
                                 </td>
                             </tr>
                             <!-- More athlete rows can be added here -->
@@ -254,5 +263,90 @@
             });
         });
     </script>
+    
+    <script>
+        // Fungsi untuk menyimpan absensi
+        document.getElementById('simpanBtn').addEventListener('click', function() {
+            const semuaAtlet = document.querySelectorAll('[id^="hadir"]');
+            let dataAbsensi = [];
+            
+            semuaAtlet.forEach((atlet, index) => {
+                const nama = atlet.name.replace('status', '');
+                const status = document.querySelector(`input[name="${atlet.name}"]:checked`).value;
+                
+                dataAbsensi.push({
+                    nama: document.querySelector(`[id="${nama}"]`).nextElementSibling.textContent,
+                    status: status
+                });
+            });
+            
+            // Kirim data ke backend (simulasi)
+            try {
+                const response = await fetch('https://api.example.com/simpan-absensi', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dataAbsensi)
+                });
+                
+                if (response.ok) {
+                    alert('Absensi berhasil disimpan ke database!');
+                } else {
+                    alert('Gagal menyimpan, coba lagi');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan server');
+            }
+        });
+
+        // Fungsi untuk mengedit atlet
+        function editAtlet(button) {
+            const row = button.closest('tr');
+            const cells = row.cells;
+            const namaLama = cells[1].textContent;
+            const namaBaru = prompt('Edit nama atlet:', namaLama);
+            if (namaBaru) {
+                cells[1].textContent = namaBaru;
+            }
+        }
+
+        // Fungsi untuk menghapus atlet
+        function hapusAtlet(button) {
+            if (confirm('Apakah Anda yakin ingin menghapus atlet ini?')) {
+                button.closest('tr').remove();
+                // Update nomor urut setelah penghapusan
+                document.querySelectorAll('table tbody tr').forEach((tr, index) => {
+                    tr.cells[0].textContent = index + 1;
+                });
+            }
+        }
+
+        // Fungsi untuk menambah atlet
+        document.getElementById('tambahAtletBtn').addEventListener('click', function() {
+            const nama = prompt('Masukkan nama atlet:');
+            if (nama) {
+                const nomorAnggota = 'SWM' + (Math.floor(Math.random() * 9000) + 1000);
+                const table = document.querySelector('table tbody');
+                
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td class="py-2 px-4 border text-center">${table.rows.length + 1}</td>
+                    <td class="py-2 px-4 border">${nama}</td>
+                    <td class="py-2 px-4 border">${nomorAnggota}</td>
+                    <td class="py-2 px-4 border">Laki-laki</td>
+                    <td class="py-2 px-4 border">08xxxxxxxxx</td>
+                    <td class="py-2 px-4 border">
+                        <button class="text-purple-600 hover:text-purple-800 mr-2">Edit</button>
+                        <button class="text-red-600 hover:text-red-800">Hapus</button>
+                    </td>
+                `;
+                
+                table.appendChild(newRow);
+            }
+        });
+    </script>
 </body>
 </html>
+
